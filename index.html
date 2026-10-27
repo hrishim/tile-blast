@@ -15,7 +15,7 @@
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;touch-action:manipulation;
   font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text);
-  background:radial-gradient(1200px 800px at 50% -10%, var(--bg2), var(--bg1) 70%);}
+  background:radial-gradient(1100px 750px at 50% -10%, #3f9d68, #1a5236 55%, #123c26 85%);}
 #app{display:flex;flex-direction:column;height:100%;}
 
 header{display:flex;align-items:center;gap:14px;padding:10px 16px 6px;}
@@ -35,17 +35,18 @@ header{display:flex;align-items:center;gap:14px;padding:10px 16px 6px;}
 #boardWrap{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
 #board{position:relative;transform-origin:center center;transition:transform .2s}
 
-.tile{position:absolute;width:44px;height:56px;border-radius:8px;cursor:pointer;
-  background:linear-gradient(160deg,#fffdf6 0%,var(--tile) 55%,#e8dfc6 100%);
-  border:1px solid #b6a87f;border-bottom:4px solid var(--tileEdge);border-right:3px solid #d6c89e;
-  box-shadow:3px 4px 7px rgba(0,0,0,.45), inset 0 1px 0 #fff;
+.tile{position:absolute;width:52px;height:64px;border-radius:9px;cursor:pointer;
+  background:linear-gradient(160deg,#fffef9 0%,#f6f2e8 60%,#eee7d4 100%);
+  border:1px solid #d9a05b;border-bottom:5px solid #cf7f2e;border-right:3px solid #e39a4a;
+  box-shadow:3px 5px 9px rgba(0,10,4,.42), inset 0 1px 0 #fff;
   display:flex;align-items:center;justify-content:center;font-size:25px;line-height:1;
   user-select:none;transition:transform .12s, filter .2s, opacity .3s;}
 .tile .f{display:flex;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
-.tile.blocked{filter:brightness(.58) saturate(.55);cursor:default}
+.tile.blocked{filter:grayscale(.12) brightness(.93);cursor:default}
 .tile.free:hover{transform:translateY(-3px)}
-.tile.sel{transform:translateY(-5px);outline:3px solid var(--gold);outline-offset:1px;
-  box-shadow:0 0 18px rgba(242,193,78,.8),3px 6px 10px rgba(0,0,0,.5);z-index:5000!important}
+.tile.sel{transform:scale(1.07);background:linear-gradient(160deg,#eefeef 0%,#d9f3e0 100%);
+  outline:3px solid var(--gold);outline-offset:1px;
+  box-shadow:0 0 18px rgba(255,210,63,.85),3px 6px 10px rgba(0,0,0,.5);z-index:5000!important}
 .tile.hint{animation:hintPulse .6s 3}
 @keyframes hintPulse{50%{outline:3px solid #6fd6ff;outline-offset:2px;transform:translateY(-4px)}}
 .tile.bad{animation:shake .3s}
@@ -87,6 +88,15 @@ footer{display:flex;justify-content:center;gap:10px;padding:10px 12px calc(12px 
 .flash{position:fixed;inset:0;background:radial-gradient(circle,#fff8dd 0%,rgba(255,215,120,0) 70%);
   opacity:.9;pointer-events:none;z-index:9997;animation:flashOut .6s forwards}
 @keyframes flashOut{to{opacity:0}}
+.trail{position:fixed;height:7px;border-radius:4px;transform-origin:0 50%;pointer-events:none;z-index:9000}
+.trail i{display:block;height:100%;border-radius:4px;transform-origin:0 50%;transform:scaleX(0);
+  background:linear-gradient(90deg,rgba(255,210,90,0),#ffd23f 25%,#fffbe8 50%,#ffd23f 75%,rgba(255,210,90,0));
+  filter:blur(.6px) drop-shadow(0 0 6px #ffb43f);animation:trailGrow .5s forwards}
+@keyframes trailGrow{60%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
+.p{position:fixed;width:9px;height:9px;border-radius:50%;pointer-events:none;z-index:9001;
+  background:radial-gradient(circle at 35% 35%,#fffbe8,#f5a623 70%);
+  box-shadow:0 0 8px #ffcf5e;animation:pfly .6s ease-out forwards}
+@keyframes pfly{0%{transform:translate(0,0) scale(1)}100%{transform:translate(var(--dx),var(--dy)) scale(.15);opacity:0}}
 @media (max-width:560px){ .stat{min-width:52px} .stat .val{font-size:17px} .btn{padding:9px 12px;font-size:12px} }
 </style>
 </head>
@@ -99,7 +109,7 @@ footer{display:flex;justify-content:center;gap:10px;padding:10px 12px calc(12px 
       <div class="lbl">Blast Meter</div>
       <div id="meterBar"><div id="meterFill"></div></div>
     </div>
-    <div class="stat"><div class="lbl">Time</div><div class="val" id="timeVal">0:00</div></div>
+    <div class="stat"><div class="lbl">Tiles</div><div class="val" id="tilesVal">144</div></div>
   </header>
   <div id="boardWrap"><div id="board"></div></div>
   <footer>
@@ -119,7 +129,7 @@ footer{display:flex;justify-content:center;gap:10px;padding:10px 12px calc(12px 
 /* ---------------- faces: vibrant inline-SVG mahjong artwork (font-independent) ---------------- */
 var FACES=(function(){
   var F=[], BLUE='#1E63B4', RED='#C33A3A', GRN='#2A8C4A', PK='#E88FB4', YEL='#F2B705';
-  function P(s){return '<svg viewBox="0 0 40 50" style="width:37px;height:46px">'+s+'</svg>';}
+  function P(s){return '<svg viewBox="0 0 40 50" style="width:45px;height:57px">'+s+'</svg>';}
   function T(t,x,y,fs,c){return '<text x="'+x+'" y="'+y+'" font-size="'+fs+'" fill="'+c+'" text-anchor="middle" font-weight="700" font-family="Hiragino Mincho ProN,Songti SC,serif">'+t+'</text>';}
   function D(x,y,r,c){return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+c+'"/><circle cx="'+x+'" cy="'+y+'" r="'+(r*.45)+'" fill="#fffdf3"/><circle cx="'+x+'" cy="'+y+'" r="'+(r*.2)+'" fill="'+c+'"/>';}
   function B(x,y,h,c){return '<rect x="'+(x-2.4)+'" y="'+(y-h/2)+'" width="4.8" height="'+h+'" rx="2.4" fill="'+c+'"/><rect x="'+(x-2.4)+'" y="'+(y-1.1)+'" width="4.8" height="2.2" fill="#fffdf3"/>';}
@@ -202,22 +212,25 @@ function generatePairs(tiles){
   }
   return null;
 }
-function assignFaces(tiles){
+function assignFaces(tiles, faceCount){
   var pairs=generatePairs(tiles);
   if(!pairs) return false;                       /* extremely unlikely */
-  var faceList=[];
-  for(var f=0;f<FACES.length;f++){ faceList.push(f); faceList.push(f); } /* 72 pairs, 36 faces x4 */
+  faceCount=faceCount||FACES.length;
+  /* HardLevelGap/DifficultyAdjust: distribute 72 pairs over fewer face types
+     (fewer distinct faces = easier matching, the observed easing lever) */
+  var base=Math.floor(pairs.length/faceCount), rem=pairs.length%faceCount, faceList=[];
+  for(var f=0;f<faceCount;f++){ var q=base+(f<rem?1:0); for(var k=0;k<q;k++) faceList.push(f); }
   faceList=shuffled(faceList);
   for(var p=0;p<pairs.length;p++){
-    var face=faceList[p % faceList.length];
+    var face=faceList[p];
     pairs[p][0].face=face; pairs[p][1].face=face;
   }
   return true;
 }
 
 /* ---------------- game state / UI ---------------- */
-var TW=46, TH=60, LAYER_OFF=6;
-var S={level:1,tiles:[],sel:null,score:0,time:0,total:0,meter:0,combo:0,lastMatch:0,
+var TW=54, TH=66, LAYER_OFF=6;
+var S={level:1,tiles:[],sel:null,score:0,time:0,total:0,meter:0,combo:0,lastMatch:0,aids:0,feverUntil:0,
        undo:[],running:false,shuffles:8,tick:null,busy:false};
 var $=function(id){return document.getElementById(id);};
 var board=$("board"), boardWrap=$("boardWrap");
@@ -244,14 +257,23 @@ function toast(msg){var t=$("toast");t.textContent=msg;t.classList.add("show");
 function levelTime(l){return Math.max(240, 450 - 10*(l-1));}
 
 function newLevel(l, silent){
-  S.level=l; S.sel=null; S.score=0; S.meter=0; S.combo=0; S.undo=[];
-  S.shuffles=8; S.total=levelTime(l); S.time=S.total; S.busy=false;
-  var pos=buildPositions(l-1);
+  S.level=l; S.sel=null; S.score=0; S.meter=0; S.combo=0; S.undo=[]; S.aids=0; S.feverUntil=0;
+  S.total=levelTime(l); S.time=S.total; S.busy=false;
+  /* FrustrationScore easing: struggling players get fewer distinct face types.
+     HardLevelGap: every 10th level is a deliberately hard milestone (full 36 faces,
+     deepest layout variant) regardless of frustration. */
+  var hardGap=(l%10===0);
+  var ease=hardGap?0:Math.min(10, Math.floor((save.frac||0)/3));
+  var faceCount=FACES.length-ease;
+  /* WinStreakExtraSlot: 3+ wins in a row grants +2 shuffles */
+  S.shuffles=8+(((save.streak||0)>=3)?2:0);
+  var pos=buildPositions(hardGap?2:l-1);
   S.tiles=pos.map(function(p){return {x:p.x,y:p.y,l:p.l,face:0,alive:true,el:null};});
-  if(!assignFaces(S.tiles)){            /* fallback: random faces */
-    var pool=[];for(var f=0;f<FACES.length;f++){pool.push(f,f,f,f);}
+  if(!assignFaces(S.tiles, faceCount)){            /* fallback: random faces */
+    var pool=[];for(var f=0;f<faceCount;f++){pool.push(f,f,f,f);}
     pool=shuffled(pool);S.tiles.forEach(function(t,i){t.face=pool[i%pool.length];});
   }
+  if(hardGap) toast("Hard Level — good luck!");
   render(); updateHUD(); stopTimer(); startTimer();
   S.running=!silent;
 }
@@ -288,22 +310,39 @@ function updateTileStates(){
 function updateHUD(){
   $("lvlVal").textContent=S.level;
   $("scoreVal").textContent=S.score;
+  $("tilesVal").textContent=S.tiles.filter(function(t){return t.alive;}).length;
   $("meterFill").style.width=Math.min(100,S.meter)+"%";
   $("meterBar").classList.toggle("full",S.meter>=100);
   $("bBlast").disabled=S.meter<100;
   $("shLeft").textContent=S.shuffles;
-  timeStr();
 }
-function timeStr(){
-  var m=Math.floor(S.time/60),s=S.time%60;
-  var v=$("timeVal");v.textContent=m+":"+(s<10?"0":"")+s;
-  v.classList.toggle("low",S.time<=30&&S.running);
+/* golden comet + sparkles between matched pair (Mahjong Blast style) */
+function burst(x,y){
+  for(var i=0;i<10;i++){
+    var p=document.createElement("div");p.className="p";
+    var a=Math.random()*6.28,d=26+Math.random()*46;
+    p.style.cssText="left:"+x+"px;top:"+y+"px;--dx:"+(Math.cos(a)*d).toFixed(0)+"px;--dy:"+(Math.sin(a)*d).toFixed(0)+"px";
+    document.body.appendChild(p);
+    setTimeout(function(el){return function(){el.remove();};}(p),650);
+  }
+}
+function fx(a,b){
+  try{
+    var ra=a.el.getBoundingClientRect(),rb=b.el.getBoundingClientRect();
+    var ax=ra.left+ra.width/2,ay=ra.top+ra.height/2,bx=rb.left+rb.width/2,by=rb.top+rb.height/2;
+    var len=Math.hypot(bx-ax,by-ay)||1,ang=Math.atan2(by-ay,bx-ax)*180/Math.PI;
+    var tr=document.createElement("div");tr.className="trail";tr.innerHTML="<i></i>";
+    tr.style.cssText="left:"+ax+"px;top:"+ay+"px;width:"+len+"px;transform:rotate("+ang+"deg)";
+    document.body.appendChild(tr);setTimeout(function(){tr.remove();},650);
+    burst(ax,ay);burst(bx,by);
+  }catch(e){}
 }
 
 /* ---------------- interaction ---------------- */
 function onTile(t){
   if(!S.running||S.busy||!t.alive) return;
-  if(!isFree(t,S.tiles)){t.el.classList.add("bad");setTimeout(function(){t.el.classList.remove("bad");},320);sndBad();return;}
+  if(!isFree(t,S.tiles)){t.el.classList.add("bad");setTimeout(function(){t.el.classList.remove("bad");},320);sndBad();
+    save.frac=Math.min(24,(save.frac||0)+1); persist(); return;} /* FrustrationScore: mis-taps count */
   if(S.sel===t){t.el.classList.remove("sel");S.sel=null;return;}
   if(S.sel && S.sel.face===t.face){ removePair(S.sel,t); S.sel=null; return; }
   if(S.sel) S.sel.el.classList.remove("sel");
@@ -313,8 +352,14 @@ function removePair(a,b,quiet){
   var now=Date.now();
   S.combo=(now-S.lastMatch<8000)?S.combo+1:1; S.lastMatch=now;
   var pts=50+Math.min(8,S.combo-1)*25;
+  /* Fever: combo chain of 5+ ignites 8s of double scoring (ScoreMultiplier) */
+  if(S.combo>=5){
+    if(now>(S.feverUntil||0)){ toast("FEVER! x2 scoring"); audio(990,.25,"triangle",.06); }
+    S.feverUntil=now+8000; pts*=2;
+  }
   S.score+=pts; S.meter=Math.min(100,S.meter+100/14);
   S.undo.push({a:a,b:b,pts:pts});
+  if(!quiet) fx(a,b);
   a.alive=false;b.alive=false;
   a.el.classList.remove("sel");b.el.classList.remove("sel");
   a.el.classList.add("gone");b.el.classList.add("gone");
@@ -323,7 +368,21 @@ function removePair(a,b,quiet){
 }
 function checkState(){
   if(S.tiles.every(function(t){return !t.alive;})){ win(); return; }
-  if(!findPair() && anyFree()){ toast("No moves — shuffling faces"); setTimeout(shuffleFaces,400); }
+  if(!findPair() && anyFree()) rescueBoard();     /* DeadlockRestartProtect */
+}
+function rescueBoard(){
+  save.frac=Math.min(24,(save.frac||0)+2); persist();
+  var alive=S.tiles.filter(function(t){return t.alive;});
+  if(alive.length<=6){
+    toast("Deadlock — fresh deal"); setTimeout(function(){newLevel(S.level);},700); return;
+  }
+  toast("No moves — free rescue redeal");
+  shuffleFaces();
+  setTimeout(function(){                       /* redeal couldn't help: fresh deal */
+    if(S.running && !findPair() && anyFree()){
+      toast("Deadlock — fresh deal"); newLevel(S.level);
+    }
+  },100);
 }
 function anyFree(){return S.tiles.some(function(t){return t.alive&&isFree(t,S.tiles);});}
 function findPair(){
@@ -339,12 +398,14 @@ $("bHint").onclick=function(){
   if(!S.running)return;
   var p=findPair();
   if(!p){toast("No moves — try shuffle");return;}
-  S.score=Math.max(0,S.score-20); updateHUD();
+  S.aids++; S.score=Math.max(0,S.score-20);
+  save.frac=Math.min(24,(save.frac||0)+2); persist(); updateHUD();
   p.forEach(function(t){t.el.classList.add("hint");setTimeout(function(){t.el.classList.remove("hint");},1600);});
 };
 $("bUndo").onclick=function(){
   if(!S.running||!S.undo.length)return;
   var u=S.undo.pop();
+  S.aids++;
   u.a.alive=true;u.b.alive=true;
   u.a.el.classList.remove("gone");u.b.el.classList.remove("gone");
   S.score=Math.max(0,S.score-u.pts); S.sel=null; S.combo=0;
@@ -353,7 +414,7 @@ $("bUndo").onclick=function(){
 $("bShuffle").onclick=function(){
   if(!S.running)return;
   if(S.shuffles<=0){toast("No shuffles left — use Undo");return;}
-  S.shuffles--;shuffleFaces();toast("Faces reshuffled");
+  S.shuffles--;S.aids++;shuffleFaces();toast("Faces reshuffled");
 };
 $("bBlast").onclick=function(){
   if(!S.running||S.meter<100)return;
@@ -374,54 +435,42 @@ $("bBlast").onclick=function(){
 function shuffleFaces(){
   var alive=S.tiles.filter(function(t){return t.alive;});
   if(alive.length<2)return;
-  var faces=alive.map(function(t){return t.face;});
-  var ok=false;
-  for(var a=0;a<60&&!ok;a++){
-    var perm=shuffled(alive);
-    /* quick check that this permutation yields moves, accept after 1 tries anyway if stuck persists */
-    alive.forEach(function(t,i){t.face=faces[0];}); /* placeholder */
-    perm.forEach(function(t,i){t.face=faces[i];});
-    ok=true;
+  /* True redeal: regenerate a guaranteed-solvable face assignment over the
+     REMAINING positions (pure face-permutation cannot fix a locked board). */
+  if(!assignFaces(alive)){
+    var faces=shuffled(alive.map(function(t){return t.face;}));
+    alive.forEach(function(t,i){t.face=faces[i];});
   }
-  if(findPair()===null&&alive.length>=4){return shuffleFaces();}
   if(S.sel){S.sel.el.classList.remove("sel");S.sel=null;}
   S.tiles.forEach(function(t){if(t.alive&&t.el)t.el.firstChild.innerHTML=FACES[t.face];});
   updateTileStates();
 }
 $("bLevels").onclick=function(){ if(S.running)stopTimer(); showLevels(); };
 
-/* ---------------- timer / modals ---------------- */
-function startTimer(){
-  S.tick=setInterval(function(){
-    if(!S.running)return;
-    S.time--; timeStr();
-    if(S.time<=0){ lose(); }
-  },1000);
-}
-function stopTimer(){ if(S.tick){clearInterval(S.tick);S.tick=null;} }
+/* ---------------- modals (no timer: relaxed play, exactly like the original) ---------------- */
+function startTimer(){}
+function stopTimer(){}
 
 function showModal(html){ $("card").innerHTML=html; $("overlay").classList.add("show"); }
 function hideModal(){ $("overlay").classList.remove("show"); }
 
-function starsFor(){ var r=S.time/S.total; return r>0.4?3:(r>0.15?2:1); }
+function starsFor(){ return S.aids<=0?3:(S.aids<=3?2:1); }
 function win(){
   S.running=false; stopTimer();
-  var bonus=S.time*5; S.score+=bonus; updateHUD();
   if(!(save.best[S.level]>=S.score)) save.best[S.level]=S.score;
-  save.max=Math.max(save.max,Math.min(50,S.level+1)); persist();
+  save.max=Math.max(save.max,Math.min(50,S.level+1));
+  save.streak=(save.streak||0)+1;                 /* WinStreakExtraSlot counter */
+  save.frac=Math.max(0,(save.frac||0)-4);         /* clean win calms FrustrationScore */
+  if(starsFor()===3) save.frac=Math.max(0,(save.frac||0)-3);
+  persist();
+  if(save.streak===3) toast("3-win streak! +2 shuffles unlocked");
   audio(523,.15);setTimeout(function(){audio(659,.15);},150);setTimeout(function(){audio(784,.3);},300);
   var st=starsFor(), stars="";
   for(var i=1;i<=3;i++) stars+= i<=st ? "★" : "<span class='off'>★</span>";
   showModal("<h1>Level "+S.level+" Cleared!</h1><div class='stars'>"+stars+"</div>"+
-    "<p>Time bonus +"+bonus+"<br>Score "+S.score+(save.best[S.level]>S.score?"  ·  Best "+save.best[S.level]:"")+"</p>"+
+    "<p>Board cleared — beautiful matching!"+(st<3?"  (starless run = no hints/undo/shuffle)":"")+"<br>Score "+S.score+"</p>"+
     "<button class='btn gold' onclick='hideModal();newLevel("+(S.level+1)+")'>NEXT LEVEL ▶</button>"+
     "<button class='btn' onclick='hideModal();newLevel("+S.level+")'>REPLAY</button>");
-}
-function lose(){
-  S.running=false; stopTimer(); sndBad();
-  showModal("<h1>Time's Up</h1><p>Cleared "+(S.tiles.length-S.tiles.filter(function(t){return t.alive;}).length)+" of "+S.tiles.length+" tiles.</p>"+
-    "<button class='btn gold' onclick='hideModal();newLevel("+S.level+")'>TRY AGAIN</button>"+
-    "<button class='btn' onclick='hideModal();showLevels()'>LEVELS</button>");
 }
 function showLevels(){
   var g="";
