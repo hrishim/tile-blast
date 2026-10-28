@@ -85,7 +85,7 @@ footer .btn:active{transform:scale(.9)}
 @keyframes blastPop{30%{transform:scale(1.4);filter:brightness(2.2)}100%{transform:scale(0);opacity:0}}
 
 footer{display:flex;justify-content:center;align-items:center;gap:6px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));flex-wrap:nowrap}
-footer .btn{width:54px;height:54px;padding:0;border-radius:50%;font-size:20px;border:3px solid #ffd75e;margin:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 28%,#a8e57c,#4caf50 55%,#2e7d32);box-shadow:0 4px 8px rgba(15,50,10,.45), inset 0 2px 4px rgba(255,255,255,.6)}
+footer .btn{width:48px;height:48px;padding:0;border-radius:50%;font-size:20px;border:3px solid #ffd75e;margin:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 28%,#a8e57c,#4caf50 55%,#2e7d32);box-shadow:0 4px 8px rgba(15,50,10,.45), inset 0 2px 4px rgba(255,255,255,.6)}
 footer .btn.gold{background:radial-gradient(circle at 35% 28%,#ffeb9e,#f4b400 55%,#a86a00)}
 footer .btn:disabled{filter:grayscale(.4) opacity(.6)}
 .btn{appearance:none;border:2px solid #ffd21e;
@@ -150,7 +150,7 @@ footer .btn:disabled{filter:grayscale(.4) opacity(.6)}
     <button class="btn gold" id="bBlast" disabled>💥</button>
     <button class="btn" id="bLevels">☰</button>
     <button class="btn" id="bMusic" title="music">🎵</button>
-  <span id="bwm" style="position:fixed;right:4px;bottom:2px;font-size:9px;color:rgba(90,20,50,.5)">B18</span></footer>
+  <span id="bwm" style="position:fixed;right:4px;bottom:2px;font-size:9px;color:rgba(90,20,50,.5)">B20</span></footer>
 </div>
 <div id="overlay"><div class="card" id="card"></div></div>
 <div id="toast"></div>
@@ -296,9 +296,9 @@ function buildPositions(variant){
   var P=[];
   function rect(l,x0,y0,x1,y1){for(var y=y0;y<=y1;y++)for(var x=x0;x<=x1;x++)P.push({x:x,y:y,l:l});}
   variant = variant % 3;
-  if(variant===0){ rect(0,0,0,6,7); rect(1,1,1,5,6); rect(2,2,2,4,5); rect(3,3,3,3,4); }
-  else if(variant===1){ rect(0,0,0,6,7); rect(1,1,0,5,7); rect(2,2,2,4,5); rect(3,3,3,3,4); }
-  else { rect(0,0,0,6,8); rect(1,1,1,5,7); rect(2,2,2,4,6); rect(3,3,3,3,5); }
+  if(variant===0){ rect(0,0,0,5,6); rect(1,1,1,4,5); rect(2,2,2,3,4); rect(3,3,3,2,3); }
+  else if(variant===1){ rect(0,0,0,5,6); rect(1,1,0,5,6); rect(2,2,2,5,6); rect(3,3,3,5,5); }
+  else { rect(0,0,0,5,7); rect(1,1,1,4,6); rect(2,2,2,3,6); rect(3,3,3,3,5); }
   return P;
 }
 function isFree(t, tiles){
@@ -458,7 +458,7 @@ function render(){
     d.addEventListener("click",function(){onTile(t);});
     t.el=d; board.appendChild(d); d.classList.add("wavein"); d.style.animationDelay=((t.x+t.y)*28+Math.min(t.l*60,180))+"ms";
   });
-  board.style.width=(maxX-minX+32)+"px"; board.style.height=(maxY-minY+32)+"px";
+  board.style.width=(maxX-minX+16)+"px"; board.style.height=(maxY-minY+16)+"px";
   updateTileStates(); fitSoon();
 }
 function fit(){
@@ -470,13 +470,13 @@ function fit(){
   var xs=1, ys=1, ls=0;
   for(var i=0;i<S.tiles.length;i++){var t=S.tiles[i]; if(!t.alive)continue;
     if(t.x+1>xs)xs=t.x+1; if(t.y+1>ys)ys=t.y+1; if(t.l>ls)ls=t.l;}
-  var tw=Math.floor((availW-32)/(xs+ls*0.5)), th=Math.floor((availH-32)/(ys+ls*0.5));
+  var tw=Math.floor((availW-16)/(xs+ls*0.5)), th=Math.floor((availH-24)/(ys+ls*0.5));
   var r=63/50;
   if(th>tw*r) th=Math.round(tw*r); else tw=Math.round(th/r);
   TW=Math.max(22,tw); TH=Math.max(28,th);
-  LAYER_OFF=Math.max(6,Math.round(TW*0.5));
+  LAYER_OFF=Math.max(6,Math.round(TW*0.44));
   relayout(xs,ys,ls);
-  window.__fitdbg="TW"+TW+" TH"+TH+" xs"+xs+" ys"+ys;var w=document.getElementById("bwm");if(w)w.textContent="B18 "+TW;
+  window.__fitdbg="TW"+TW+" TH"+TH+" xs"+xs+" ys"+ys;var w=document.getElementById("bwm");if(w)w.textContent="B20 "+TW;
 }
 function relayout(xs,ys,ls){
   xs=xs||7; ys=ys||8; ls=ls===undefined?3:ls;
@@ -486,10 +486,10 @@ function relayout(xs,ys,ls){
     if(t._lx<lo)lo=t._lx; if(t._lx+TW>ro)ro=t._lx+TW;
     if(t._ly<to)to=t._ly; if(t._ly+TH>bo)bo=t._ly+TH; }
   if(lo>ro){lo=0;ro=xs*TW;to=0;bo=ys*TH+ls*LAYER_OFF;}
-  board.style.width=(ro-lo+32)+"px"; board.style.height=(bo-to+32)+"px";
+  board.style.width=(ro-lo+16)+"px"; board.style.height=(bo-to+16)+"px";
   S.tiles.forEach(function(t){ if(!t.alive||!t.el)return;
-    t.el.style.left=Math.round(t._lx-lo+16)+"px";
-    t.el.style.top=Math.round(t._ly-to+16)+"px";
+    t.el.style.left=Math.round(t._lx-lo+8)+"px";
+    t.el.style.top=Math.round(t._ly-to+8)+"px";
     if(t.l>0&&!t.dark) t.el.style.boxShadow="0 "+(5+2*t.l)+"px "+(10+5*t.l)+"px rgba(15,50,10,.5)"; });
   var rs=document.documentElement.style;
   rs.setProperty("--tw",TW+"px"); rs.setProperty("--th",TH+"px");
