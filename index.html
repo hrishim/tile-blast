@@ -35,18 +35,18 @@ header{display:flex;align-items:center;gap:14px;padding:calc(10px + max(20px, en
 #boardWrap{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
 #board{position:relative;transform-origin:center center;transition:transform .2s}
 
-.tile{position:absolute;width:var(--tw,52px);height:var(--th,66px);border-radius:12px;cursor:pointer;
-  background:linear-gradient(165deg,#ffffff 0%,#f7faf1 55%,#e6ecd9 100%);
-  border:1px solid #b9c4ae;border-bottom:10px solid #a4b294;border-right:6px solid #c2ccae;
+.tile{position:absolute;width:var(--tw,52px);height:var(--th,66px);border-radius:14px;cursor:pointer;
+  background:linear-gradient(165deg,#fffefa 0%,#f9f4e6 55%,#ece1c9 100%);
+  border:1px solid #cabfa3;border-bottom:10px solid #b09a72;border-right:6px solid #d9cfae;
   box-shadow:4px 7px 12px rgba(18,55,12,.38), inset 0 1px 0 #fff;
   display:flex;align-items:center;justify-content:center;font-size:25px;line-height:1;
   user-select:none;transition:transform .12s, filter .2s, opacity .3s;}
-.tile.free{outline:none;box-shadow:4px 7px 12px rgba(18,55,12,.38), inset 0 1px 0 #fff, 0 0 8px rgba(255,255,220,.5)}
+.tile.free{outline:none;box-shadow:4px 7px 12px rgba(40,35,12,.35), inset 0 1px 0 #fff, 0 0 8px rgba(255,250,210,.55)}
 .tile .f{display:flex;width:96%;height:96%;filter:saturate(1.08) contrast(1.05)}
 .tile .f svg{width:100%!important;height:100%!important}
 .tile .f img{width:100%!important;height:100%!important;object-fit:contain;image-rendering:auto}
-.tile.blocked .f{filter:grayscale(.45) brightness(.62) opacity(.92)}
-.tile.blocked{filter:none;background:linear-gradient(160deg,#e9eee0 0%,#cdd8c0 55%,#aebda1 100%);border-color:#93a37d;border-bottom-color:#7f9268;cursor:default;outline:none;box-shadow:3px 5px 9px rgba(18,55,12,.3)}
+.tile.blocked .f{filter:brightness(.96) saturate(.94)}
+.tile.blocked{filter:none;background:linear-gradient(160deg,#f7f1e0 0%,#e4d8bc 55%,#ccbc96 100%);border-color:#b4a67f;border-bottom-color:#9d8a5e;cursor:default;outline:none;box-shadow:3px 5px 9px rgba(18,55,12,.3)}
 .tile::before{content:"";position:absolute;left:3px;right:3px;top:2px;height:24%;border-radius:7px 7px 45% 45%/7px 7px 22px 22px;background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,0));pointer-events:none;z-index:1}
 
 /* B15 cute layer: sparkles, score pops, toast slide, board wave-in */
@@ -150,7 +150,7 @@ footer .btn:disabled{filter:grayscale(.4) opacity(.6)}
     <button class="btn gold" id="bBlast" disabled>💥</button>
     <button class="btn" id="bLevels">☰</button>
     <button class="btn" id="bMusic" title="music">🎵</button>
-  <span id="bwm" style="position:fixed;right:4px;bottom:2px;font-size:9px;color:rgba(90,20,50,.5)">B17</span></footer>
+  <span id="bwm" style="position:fixed;right:4px;bottom:2px;font-size:9px;color:rgba(90,20,50,.5)">B18</span></footer>
 </div>
 <div id="overlay"><div class="card" id="card"></div></div>
 <div id="toast"></div>
@@ -476,7 +476,7 @@ function fit(){
   TW=Math.max(22,tw); TH=Math.max(28,th);
   LAYER_OFF=Math.max(6,Math.round(TW*0.5));
   relayout(xs,ys,ls);
-  window.__fitdbg="TW"+TW+" TH"+TH+" xs"+xs+" ys"+ys;var w=document.getElementById("bwm");if(w)w.textContent="B17 "+TW;
+  window.__fitdbg="TW"+TW+" TH"+TH+" xs"+xs+" ys"+ys;var w=document.getElementById("bwm");if(w)w.textContent="B18 "+TW;
 }
 function relayout(xs,ys,ls){
   xs=xs||7; ys=ys||8; ls=ls===undefined?3:ls;
