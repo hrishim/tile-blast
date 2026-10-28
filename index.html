@@ -331,12 +331,17 @@ function render(){
     t.el=d; board.appendChild(d);
   });
   board.style.width=(maxX-minX+32)+"px"; board.style.height=(maxY-minY+32)+"px";
-  updateTileStates(); fit();
+  updateTileStates(); fitSoon();
 }
 function fit(){
-  var s=Math.min(1,(boardWrap.clientWidth-8)/board.offsetWidth,(boardWrap.clientHeight-8)/board.offsetHeight);
+  var w=boardWrap.clientWidth||document.documentElement.clientWidth||window.innerWidth;
+  var h=boardWrap.clientHeight||document.documentElement.clientHeight||window.innerHeight;
+  var bw=board.offsetWidth||w, bh=board.offsetHeight||h;
+  var s=Math.min(1,(w-8)/bw,(h-8)/bh); if(!(s>0))s=1;
   board.style.transform="scale("+s+")";
 }
+function fitSoon(){ fit(); setTimeout(fit,60); setTimeout(fit,250);
+  if(typeof requestAnimationFrame==="function") requestAnimationFrame(function(){requestAnimationFrame(fit);}); }
 function updateTileStates(){
   S.tiles.forEach(function(t){
     if(!t.alive){return;}
@@ -543,7 +548,7 @@ document.addEventListener("keydown",function(e){
   if(e.key==="u")$("bUndo").click();
   if(e.key==="b")$("bBlast").click();
 });
-window.addEventListener("resize",fit);
+window.addEventListener("resize",fitSoon);
 if(typeof window!=="undefined"&&typeof document!=="undefined"&&document.getElementById){
   var boot=function(){ var m=location.hash.match(/^#play(\d*)$/); m ? newLevel(Math.max(1,parseInt(m[1],10)||save.max),true) : welcome(); };
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);
