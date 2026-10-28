@@ -8,17 +8,17 @@
 <title>Tile Blast · Mahjong Match</title>
 <style>
 :root{
-  --bg1:#f8d2da; --bg2:#d98fa4; --gold:#f2c14e; --gold2:#ffd21e;
+  --bg1:#8fd868; --bg2:#3f9e35; --gold:#f2c14e; --gold2:#ffd21e;
   --tile:#ffffff; --tileEdge:#c9c4d8; --bad:#e05252; --good:#4cd07d;
   --panel:#10283c; --panelBorder:#1d4262; --text:#59203a;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;touch-action:manipulation;
   font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text);
-  background:radial-gradient(1200px 800px at 50% 0%, #fbe3e8, #f2bfcd 55%, #dd93a8 100%);}
+  background:linear-gradient(180deg,#7cc94f 0%,#4da53c 55%,#2e7d2e 100%);}
 #app{display:flex;flex-direction:column;height:100%;}
 
-header{display:flex;align-items:center;gap:14px;padding:10px 16px 6px;}
+header{display:flex;align-items:center;gap:14px;padding:calc(10px + max(20px, env(safe-area-inset-top))) 16px 6px;}
 .stat{display:flex;flex-direction:column;align-items:center;min-width:64px}
 .stat .lbl{font-size:10px;letter-spacing:.12em;opacity:.65;text-transform:uppercase}
 .stat .val{font-size:22px;font-weight:800;color:var(--gold2);font-variant-numeric:tabular-nums;text-shadow:0 1px 0 #a86f00,0 2px 5px rgba(90,20,40,.35)}
@@ -35,28 +35,27 @@ header{display:flex;align-items:center;gap:14px;padding:10px 16px 6px;}
 #boardWrap{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
 #board{position:relative;transform-origin:center center;transition:transform .2s}
 
-.tile{position:absolute;width:var(--tw,52px);height:var(--th,66px);border-radius:9px;cursor:pointer;
-  background:linear-gradient(160deg,#ffffff 0%,#f8f6fb 60%,#ebe8f2 100%);
-  border:1px solid #c9c4d8;border-bottom:7px solid #9d93b8;border-right:5px solid #b7adc9;
-  box-shadow:5px 7px 11px rgba(60,10,35,.32), inset 0 1px 0 #fff;
+.tile{position:absolute;width:var(--tw,52px);height:var(--th,66px);border-radius:12px;cursor:pointer;
+  background:linear-gradient(165deg,#ffffff 0%,#f7faf1 55%,#e6ecd9 100%);
+  border:1px solid #b9c4ae;border-bottom:10px solid #a4b294;border-right:6px solid #c2ccae;
+  box-shadow:4px 7px 12px rgba(18,55,12,.38), inset 0 1px 0 #fff;
   display:flex;align-items:center;justify-content:center;font-size:25px;line-height:1;
   user-select:none;transition:transform .12s, filter .2s, opacity .3s;}
-.tile.free{outline:2.5px solid #8a2be2;outline-offset:-1px;
-  box-shadow:3px 5px 9px rgba(60,10,35,.30), 0 0 13px rgba(155,66,255,.55), inset 0 1px 0 #fff}
+.tile.free{outline:none;box-shadow:4px 7px 12px rgba(18,55,12,.38), inset 0 1px 0 #fff, 0 0 8px rgba(255,255,220,.5)}
 .tile .f{display:flex;width:88%;height:90%;filter:saturate(1.18) contrast(1.05)}
 .tile .f svg{width:100%!important;height:100%!important}
-.tile.blocked .f{filter:grayscale(1) opacity(.5)}
-.tile.blocked{filter:none;background:linear-gradient(160deg,#dfe6f2 0%,#c6d2e6 55%,#adbcd6 100%);border-color:#93a3bd;border-bottom-color:#8496b4;cursor:default;outline:none;box-shadow:3px 5px 9px rgba(60,10,35,.25)}
+.tile.blocked .f{filter:grayscale(.45) brightness(.62) opacity(.92)}
+.tile.blocked{filter:none;background:linear-gradient(160deg,#e9eee0 0%,#cdd8c0 55%,#aebda1 100%);border-color:#93a37d;border-bottom-color:#7f9268;cursor:default;outline:none;box-shadow:3px 5px 9px rgba(18,55,12,.3)}
 .tile::before{content:"";position:absolute;left:3px;right:3px;top:2px;height:24%;border-radius:7px 7px 45% 45%/7px 7px 22px 22px;background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,0));pointer-events:none;z-index:1}
 /* DarkBox: glossy purple blocker that absorbs 3 matches before shattering */
-.tile.dark{background:linear-gradient(165deg,#d18cff 0%,#a139ea 45%,#6a11b8 100%);outline:none;
-  border:1px solid #5a0da8;border-bottom:5px solid #490a90;border-right:3px solid #7a1fd0;
-  box-shadow:3px 5px 10px rgba(45,0,75,.45), inset 0 2px 5px rgba(255,255,255,.5), inset 0 -6px 10px rgba(40,0,80,.5)}
+.tile.dark{background:linear-gradient(165deg,#ffeb9e 0%,#f6bb00 45%,#b06f00 100%);outline:none;
+  border:1px solid #8a5a00;border-bottom:8px solid #7d5200;border-right:5px solid #9a6c00;
+  box-shadow:4px 7px 12px rgba(60,40,0,.45), inset 0 2px 5px rgba(255,255,255,.55), inset 0 -6px 10px rgba(120,70,0,.5)}
 .tile.dark::after{content:"";position:absolute;left:6px;top:4px;width:58%;height:32%;border-radius:8px 8px 16px 16px;
   background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.05));pointer-events:none}
-.tile.dark.hp2{background:linear-gradient(165deg,#b06fe0 0%,#8a2bc8 45%,#5a0d9e 100%)}
-.tile.dark.hp1{background:linear-gradient(165deg,#8f55b8 0%,#6d1da6 45%,#45097c 100%);
-  box-shadow:3px 5px 10px rgba(45,0,75,.45), inset 0 1px 2px rgba(255,255,255,.28)}
+.tile.dark.hp2{background:linear-gradient(165deg,#eecb74 0%,#d99e00 45%,#8f5900 100%)}
+.tile.dark.hp1{background:linear-gradient(165deg,#d9b45f 0%,#b57e00 45%,#6e4400 100%);
+  box-shadow:3px 5px 10px rgba(60,40,0,.45), inset 0 1px 2px rgba(255,255,255,.28)}
 .tile.dark.hp1::after{opacity:.3}
 .tile.free:hover{transform:translateY(-3px)}
 .tile.sel{transform:scale(1.07);background:linear-gradient(160deg,#ffeea1 0%,#ffd21e 100%);
@@ -72,7 +71,9 @@ header{display:flex;align-items:center;gap:14px;padding:10px 16px 6px;}
 @keyframes blastPop{30%{transform:scale(1.4);filter:brightness(2.2)}100%{transform:scale(0);opacity:0}}
 
 footer{display:flex;justify-content:center;align-items:center;gap:6px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));flex-wrap:nowrap}
-footer .btn{padding:9px 9px;font-size:13px;border-radius:16px;margin:0}
+footer .btn{width:54px;height:54px;padding:0;border-radius:50%;font-size:20px;border:3px solid #ffd75e;margin:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 28%,#a8e57c,#4caf50 55%,#2e7d32);box-shadow:0 4px 8px rgba(15,50,10,.45), inset 0 2px 4px rgba(255,255,255,.6)}
+footer .btn.gold{background:radial-gradient(circle at 35% 28%,#ffeb9e,#f4b400 55%,#a86a00)}
+footer .btn:disabled{filter:grayscale(.4) opacity(.6)}
 .btn{appearance:none;border:2px solid #ffd21e;
   background:linear-gradient(180deg,#ff86ab,#e94f7f);color:#fff;font-weight:700;font-size:13px;
   padding:10px 16px;border-radius:22px;cursor:pointer;letter-spacing:.03em;text-shadow:0 1px 2px rgba(120,20,60,.5);
@@ -134,7 +135,7 @@ footer .btn{padding:9px 9px;font-size:13px;border-radius:16px;margin:0}
     <button class="btn" id="bShuffle">🔀<small id="shLeft">8</small></button>
     <button class="btn gold" id="bBlast" disabled>💥</button>
     <button class="btn" id="bLevels">☰</button>
-  <span id="bwm" style="position:fixed;right:4px;bottom:2px;font-size:9px;color:rgba(90,20,50,.5)">B9</span></footer>
+  <span id="bwm" style="position:fixed;right:4px;bottom:2px;font-size:9px;color:rgba(90,20,50,.5)">B10</span></footer>
 </div>
 <div id="overlay"><div class="card" id="card"></div></div>
 <div id="toast"></div>
@@ -206,9 +207,9 @@ function buildPositions(variant){
   var P=[];
   function rect(l,x0,y0,x1,y1){for(var y=y0;y<=y1;y++)for(var x=x0;x<=x1;x++)P.push({x:x,y:y,l:l});}
   variant = variant % 3;
-  if(variant===0){ rect(0,0,0,8,9); rect(1,2,2,6,7); rect(2,3,4,5,5); }
-  else if(variant===1){ rect(0,0,0,8,9); rect(1,2,1,6,8); rect(2,3,3,5,6); rect(3,4,4,4,5); }
-  else { rect(0,0,0,8,9); rect(1,2,2,6,7); rect(2,3,3,5,6); rect(3,4,4,4,5); }
+  if(variant===0){ rect(0,0,0,6,7); rect(1,1,1,5,6); rect(2,2,2,4,5); rect(3,3,3,3,4); }
+  else if(variant===1){ rect(0,0,0,6,7); rect(1,1,0,5,7); rect(2,2,2,4,5); rect(3,3,3,3,4); }
+  else { rect(0,0,0,6,8); rect(1,1,1,5,7); rect(2,2,2,4,6); rect(3,3,3,3,5); }
   return P;
 }
 function isFree(t, tiles){
@@ -345,21 +346,21 @@ function fit(){
   var xs=1, ys=1, ls=0;
   for(var i=0;i<S.tiles.length;i++){var t=S.tiles[i]; if(!t.alive)continue;
     if(t.x+1>xs)xs=t.x+1; if(t.y+1>ys)ys=t.y+1; if(t.l>ls)ls=t.l;}
-  var tw=Math.floor((availW-32)/xs), th=Math.floor((availH-32)/ys);
+  var tw=Math.floor((availW-32)/(xs+ls*0.5)), th=Math.floor((availH-32)/(ys+ls*0.5));
   var r=63/50;
   if(th>tw*r) th=Math.round(tw*r); else tw=Math.round(th/r);
   TW=Math.max(22,tw); TH=Math.max(28,th);
-  LAYER_OFF=Math.max(5,Math.round(TW*0.17));
+  LAYER_OFF=Math.max(6,Math.round(TW*0.5));
   relayout(xs,ys,ls);
-  window.__fitdbg="TW"+TW+" TH"+TH+" xs"+xs+" ys"+ys;var w=document.getElementById("bwm");if(w)w.textContent="B9 "+TW;
+  window.__fitdbg="TW"+TW+" TH"+TH+" xs"+xs+" ys"+ys;var w=document.getElementById("bwm");if(w)w.textContent="B10 "+TW;
 }
 function relayout(xs,ys,ls){
   xs=xs||12; ys=ys||8; ls=ls===undefined?3:ls;
-  var mx=-ls*LAYER_OFF;
   S.tiles.forEach(function(t){ if(!t.alive||!t.el)return;
-    t.el.style.left=(t.x*TW - t.l*LAYER_OFF - mx +16)+"px";
-    t.el.style.top=(t.y*TH - t.l*LAYER_OFF - mx +16)+"px"; });
-  board.style.width=(xs*TW+32)+"px"; board.style.height=(ys*TH+32)+"px";
+    t.el.style.left=(t.x*TW + t.l*LAYER_OFF +16)+"px";
+    t.el.style.top=(t.y*TH - t.l*LAYER_OFF + ls*LAYER_OFF +16)+"px";
+    if(t.l>0&&!t.dark) t.el.style.boxShadow="0 "+(5+2*t.l)+"px "+(10+5*t.l)+"px rgba(15,50,10,.5)"; });
+  board.style.width=(xs*TW + ls*LAYER_OFF+32)+"px"; board.style.height=(ys*TH + ls*LAYER_OFF+32)+"px";
   var rs=document.documentElement.style;
   rs.setProperty("--tw",TW+"px"); rs.setProperty("--th",TH+"px");
 }
