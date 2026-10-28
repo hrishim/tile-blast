@@ -42,7 +42,7 @@ header{display:flex;align-items:center;gap:14px;padding:calc(10px + max(20px, en
   display:flex;align-items:center;justify-content:center;font-size:25px;line-height:1;
   user-select:none;transition:transform .12s, filter .2s, opacity .3s;}
 .tile.free{outline:none;box-shadow:4px 7px 12px rgba(18,55,12,.38), inset 0 1px 0 #fff, 0 0 8px rgba(255,255,220,.5)}
-.tile .f{display:flex;width:88%;height:90%;filter:saturate(1.18) contrast(1.05)}
+.tile .f{display:flex;width:96%;height:96%;filter:saturate(1.3) contrast(1.25);transform:scale(1.04)}
 .tile .f svg{width:100%!important;height:100%!important}
 .tile.blocked .f{filter:grayscale(.45) brightness(.62) opacity(.92)}
 .tile.blocked{filter:none;background:linear-gradient(160deg,#e9eee0 0%,#cdd8c0 55%,#aebda1 100%);border-color:#93a37d;border-bottom-color:#7f9268;cursor:default;outline:none;box-shadow:3px 5px 9px rgba(18,55,12,.3)}
@@ -135,7 +135,7 @@ footer .btn:disabled{filter:grayscale(.4) opacity(.6)}
     <button class="btn" id="bShuffle">🔀<small id="shLeft">8</small></button>
     <button class="btn gold" id="bBlast" disabled>💥</button>
     <button class="btn" id="bLevels">☰</button>
-  <span id="bwm" style="position:fixed;right:4px;bottom:2px;font-size:9px;color:rgba(90,20,50,.5)">B12</span></footer>
+  <span id="bwm" style="position:fixed;right:4px;bottom:2px;font-size:9px;color:rgba(90,20,50,.5)">B14</span></footer>
 </div>
 <div id="overlay"><div class="card" id="card"></div></div>
 <div id="toast"></div>
@@ -149,17 +149,17 @@ var FACES=(function(){
   var gid=0;
   function grad(c1,c2,id){return '<radialGradient id="'+id+'" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="'+c1+'"/><stop offset="100%" stop-color="'+c2+'"/></radialGradient>';}
   function DEFS(extra){return '<defs>'+grad('#4E93E8',BLUE,'gb'+gid)+grad('#E56158',RED,'gr'+gid)+grad('#54C37D',GRN,'gg'+gid)+grad('#F2A0C2','#D45D8C','gp'+gid)+grad('#FFC243','#D98B00','gy'+gid)+extra+'</defs>';}
-  function P(s,extra){return '<svg viewBox="0 0 40 50" shape-rendering="geometricPrecision" style="width:47px;height:59px"><defs>'+grad('#4E93E8',BLUE,'gb'+gid)+grad('#E56158',RED,'gr'+gid)+grad('#54C37D',GRN,'gg'+gid)+grad('#F2A0C2','#D45D8C','gp'+gid)+grad('#FFC243','#D98B00','gy'+gid)+'</defs><g stroke="#0c1322" stroke-width="1.3" stroke-linejoin="round">'+s+'</g></svg>';gid++;}
+  function P(s,extra){return '<svg viewBox="0 0 40 50" shape-rendering="geometricPrecision" style="width:47px;height:59px"><defs>'+grad('#4E93E8',BLUE,'gb'+gid)+grad('#E56158',RED,'gr'+gid)+grad('#54C37D',GRN,'gg'+gid)+grad('#F2A0C2','#D45D8C','gp'+gid)+grad('#FFC243','#D98B00','gy'+gid)+'</defs><g stroke="#050a18" stroke-width="1.9" stroke-linejoin="round">'+s+'</g></svg>';gid++;}
   function T(t,x,y,fs,c,c2){var g='t'+(gid++)+'x';var def=grad(c2||'#ffffff00',c,g);return '<defs>'+def+'</defs><text x="'+x+'" y="'+y+'" font-size="'+fs+'" fill="url(#'+g+')" text-anchor="middle" font-weight="800" font-family="Hiragino Mincho ProN,Songti SC,serif" stroke="#141d33" stroke-width="2.6" paint-order="stroke" stroke-linejoin="round">'+t+'</text>';}
   function D(x,y,r,ck){var u='url(#'+ck+gid+')';
     return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+u+'"/>'
-      +'<circle cx="'+x+'" cy="'+y+'" r="'+(r*.52)+'" fill="#fffdf3" stroke-width=".7"/>'
-      +'<circle cx="'+x+'" cy="'+y+'" r="'+(r*.24)+'" fill="url(#'+ck+gid+')" stroke-width=".5"/>'
+      +'<circle cx="'+x+'" cy="'+y+'" r="'+(r*.52)+'" fill="#fffdf3" stroke-width="1.4"/>'
+      +'<circle cx="'+x+'" cy="'+y+'" r="'+(r*.24)+'" fill="url(#'+ck+gid+')" stroke-width=".9"/>'
       +'<ellipse cx="'+(x-r*.32)+'" cy="'+(y-r*.42)+'" rx="'+(r*.30)+'" ry="'+(r*.17)+'" fill="#ffffff" opacity=".85" stroke="none"/>';}
   function B(x,y,h,ck){var u='url(#'+ck+gid+')';
     return '<rect x="'+(x-3.1)+'" y="'+(y-h/2)+'" width="6.2" height="'+h+'" rx="3.1" fill="'+u+'"/>'
-      +'<line x1="'+x+'" y1="'+(y-h/2+2)+'" x2="'+x+'" y2="'+(y+h/2-2)+'" stroke="#0e2c1d" stroke-width=".8" opacity=".45"/>'
-      +'<line x1="'+(x-1.3)+'" y1="'+(y-h/2+3)+'" x2="'+(x-1.3)+'" y2="'+(y+h/2-3)+'" stroke="#ffffff" stroke-width="1.1" opacity=".7"/>';
+      +'<line x1="'+x+'" y1="'+(y-h/2+2)+'" x2="'+x+'" y2="'+(y+h/2-2)+'" stroke="#0e2c1d" stroke-width="1.2" opacity=".45"/>'
+      +'<line x1="'+(x-1.3)+'" y1="'+(y-h/2+3)+'" x2="'+(x-1.3)+'" y2="'+(y+h/2-3)+'" stroke="#ffffff" stroke-width="1.4" opacity=".7"/>';
   }
   var i,j,s,L,ck;
   /* 9 characters (萬子): blue number + red 萬, glossy */
@@ -169,30 +169,30 @@ var FACES=(function(){
   var dotPos=[[[20,25]],[[13,15],[27,35]],[[11,12],[20,25],[29,38]],
     [[13,15],[27,15],[13,35],[27,35]],[[12,13],[28,13],[20,25],[12,37],[28,37]],
     [[13,12],[27,12],[13,25],[27,25],[13,38],[27,38]],
-    [[13,9],[20,15],[27,21],[13,32],[27,32],[20,38],[27,44]],
-    [[13,8],[27,8],[13,19],[27,19],[13,30],[27,30],[13,41],[27,41]],
+    [[12,9],[20,16],[28,23],[12,33],[28,33],[16,44],[28,44]],
+    [[12,9],[28,9],[12,21],[28,21],[12,33],[28,33],[12,44],[28,44]],
     [[11,10],[20,10],[29,10],[11,25],[20,25],[29,25],[11,40],[20,40],[29,40]]];
   var dcs=['gb','gr','gg'];
   for(i=0;i<9;i++){s='';L=dotPos[i];
-    for(j=0;j<L.length;j++){var r=(i===0)?11:(i<4?6.4:(i<6?5.6:5));ck=(i===4&&j===2)?'gr':dcs[j%3];s+=D(L[j][0],L[j][1],r,ck);}
+    for(j=0;j<L.length;j++){var r=(i===0)?11:(i<4?6.4:(i<6?5.6:(i<8?4.7:4.9)));ck=(i===4&&j===2)?'gr':dcs[j%3];s+=D(L[j][0],L[j][1],r,ck);}
     F.push(P(s));}
   /* 9 bamboo (索子): glossy capsule sticks; 1-bamboo is a bird */
   var bamPos=[null,null,[[20,13],[20,34]],[[20,12],[13,34],[27,34]],[[13,14],[27,14],[13,35],[27,35]],
     [[13,13],[27,13],[20,25],[13,37],[27,37]],[[13,11],[27,11],[13,25],[27,25],[13,39],[27,39]],
     [[20,9],[13,24],[27,24],[13,39],[27,39]],
-    [[13,9],[27,9],[13,20],[27,20],[13,31],[27,31],[13,42],[27,42]],
+    [[12,9],[28,9],[12,21],[28,21],[12,32],[28,32],[12,44],[28,44]],
     [[11,10],[20,10],[29,10],[11,25],[20,25],[29,25],[11,40],[20,40],[29,40]]];
   var bcs=['gg','gb','gr'];
   for(i=1;i<=9;i++){
     if(i===1){F.push(P('<ellipse cx="21" cy="30" rx="8.5" ry="10.5" fill="url(#gg'+gid+')"/><circle cx="21" cy="15" r="5.8" fill="url(#gb'+gid+')"/><path d="M26.5,13 L33,16.5 L26.5,19.5 Z" fill="url(#gr'+gid+')"/><circle cx="23" cy="13.5" r="1.3" fill="#fffdf3" stroke="none"/><path d="M14.5,33 L7,43 L18,39 Z" fill="url(#gr'+gid+')"/><rect x="18" y="40.5" width="2" height="6" fill="#8a6d3b"/><rect x="23" y="40.5" width="2" height="6" fill="#8a6d3b"/><ellipse cx="18" cy="24" rx="2.4" ry="4" fill="#ffffff" opacity=".5" stroke="none"/>'));continue;}
-    s='';L=bamPos[i];for(j=0;j<L.length;j++)s+=B(L[j][0],L[j][1],i<3?16:(i<7?12.5:10.5),bcs[j%3]);
+    s='';L=bamPos[i];for(j=0;j<L.length;j++)s+=B(L[j][0],L[j][1],i<3?16:(i<6?12.5:(i===6?10:8.6)),bcs[j%3]);
     F.push(P(s));}
   /* 4 winds */
-  '東南西北'.split('').forEach(function(w){F.push(P(T(w,20,33,23,'#1E3F7A','#7FA8E8')));});
+  '東南西北'.split('').forEach(function(w){F.push(P(T(w,20,33,23,'#12182a','#6d7893')));});
   /* 3 dragons */
   F.push(P(T('中',20,34,26,'#C22F2A','#F2A09A')));
   F.push(P(T('發',20,34,24,'#1F8A4C','#9BE8B8')));
-  F.push(P('<rect x="8" y="9" width="24" height="32" rx="4" fill="none" stroke="'+BLUE+'" stroke-width="3"/><rect x="13" y="14" width="14" height="22" rx="2" fill="none" stroke="'+BLUE+'" stroke-width="1.3"/>'));
+  F.push(P(T('白',20,34,24,'#2B6BCB','#A8CBF7')));
   /* 2 flowers */
   s='';for(j=0;j<5;j++){var a=j*72*Math.PI/180;
     s+='<circle cx="'+(20+8.4*Math.cos(a)).toFixed(1)+'" cy="'+(25+8.4*Math.sin(a)).toFixed(1)+'" r="5.6" fill="url(#gp'+gid+')"/>';}
@@ -352,7 +352,7 @@ function fit(){
   TW=Math.max(22,tw); TH=Math.max(28,th);
   LAYER_OFF=Math.max(6,Math.round(TW*0.5));
   relayout(xs,ys,ls);
-  window.__fitdbg="TW"+TW+" TH"+TH+" xs"+xs+" ys"+ys;var w=document.getElementById("bwm");if(w)w.textContent="B12 "+TW;
+  window.__fitdbg="TW"+TW+" TH"+TH+" xs"+xs+" ys"+ys;var w=document.getElementById("bwm");if(w)w.textContent="B14 "+TW;
 }
 function relayout(xs,ys,ls){
   xs=xs||7; ys=ys||8; ls=ls===undefined?3:ls;
@@ -364,8 +364,8 @@ function relayout(xs,ys,ls){
   if(lo>ro){lo=0;ro=xs*TW;to=0;bo=ys*TH+ls*LAYER_OFF;}
   board.style.width=(ro-lo+32)+"px"; board.style.height=(bo-to+32)+"px";
   S.tiles.forEach(function(t){ if(!t.alive||!t.el)return;
-    t.el.style.left=(t._lx-lo+16)+"px";
-    t.el.style.top=(t._ly-to+16)+"px";
+    t.el.style.left=Math.round(t._lx-lo+16)+"px";
+    t.el.style.top=Math.round(t._ly-to+16)+"px";
     if(t.l>0&&!t.dark) t.el.style.boxShadow="0 "+(5+2*t.l)+"px "+(10+5*t.l)+"px rgba(15,50,10,.5)"; });
   var rs=document.documentElement.style;
   rs.setProperty("--tw",TW+"px"); rs.setProperty("--th",TH+"px");
