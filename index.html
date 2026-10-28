@@ -335,16 +335,26 @@ function render(){
   updateTileStates(); fitSoon();
 }
 function fit(){
-  var vw=window.innerWidth||document.documentElement.clientWidth||0;
-  var vh=window.innerHeight||document.documentElement.clientHeight||0;
+  var vw=window.innerWidth||document.documentElement.clientWidth||414;
+  var vh=window.innerHeight||document.documentElement.clientHeight||736;
   var hd=document.querySelector("header"), ft=document.querySelector("footer");
   var used=(hd&&hd.offsetHeight?hd.offsetHeight:90)+(ft&&ft.offsetHeight?ft.offsetHeight:120);
   var h=Math.max(140,vh-used-6);
-  var bw=board.offsetWidth||1, bh=board.offsetHeight||1;
+  /* compute board size from layout constants, never from DOM measures */
+  var bw=32, bh=32, x=0, y=0, l=0, t;
+  for(var i=0;i<S.tiles.length;i++){t=S.tiles[i]; if(!t.alive)continue;
+    x=Math.max(t.x*TW,0); }
+  var xs=0, ys=0, ls=0;
+  for(var i=0;i<S.tiles.length;i++){t=S.tiles[i]; if(!t.alive)continue;
+    xs=Math.max(xs,t.x+1); ys=Math.max(ys,t.y+1); ls=Math.max(ls,t.l);}
+  bw=xs*TW - ls*LAYER_OFF + 32; bh=ys*TH - ls*LAYER_OFF + 32;
   var s=Math.min(1,(vw-8)/bw,(h-4)/bh); if(!(s>0)||!isFinite(s))s=1;
-  if("zoom" in board.style){ board.style.zoom=String(s); board.style.transform="none"; }
+  if("zoom" in document.getElementById("board").style){ board.style.zoom=String(s); board.style.transform="none"; }
   else { board.style.zoom=""; board.style.transform="scale("+s+")"; }
-  window.__fitdbg="vw"+vw+" vh"+vh+" bw"+bw+" bh"+bh+" s"+s.toFixed(2)+("zoom" in board.style?"Z":"T");
+  board.style.width=bw+"px"; board.style.height=bh+"px";
+  window.__fitdbg="vw"+vw+" vh"+vh+" bw"+bw+" bh"+bh+" s"+s.toFixed(2);
+  var f=document.getElementById("fitDbg");
+  if(f)f.textContent="fit "+s.toFixed(2)+" "+bw+"x"+bh;
 }
 function fitSoon(){ fit(); setTimeout(fit,60); setTimeout(fit,250);
   if(typeof requestAnimationFrame==="function") requestAnimationFrame(function(){requestAnimationFrame(fit);}); }
@@ -559,6 +569,7 @@ if(typeof window!=="undefined"&&typeof document!=="undefined"&&document.getEleme
   var boot=function(){ var m=location.hash.match(/^#play(\d*)$/); m ? newLevel(Math.max(1,parseInt(m[1],10)||save.max),true) : welcome(); };
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);
   else boot();
+  setInterval(function(){try{if(S.tiles&&S.tiles.length)fit();}catch(e){}},1500);
 }
 </script>
 </body>
