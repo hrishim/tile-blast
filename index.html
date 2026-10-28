@@ -135,7 +135,7 @@ footer .btn:disabled{filter:grayscale(.4) opacity(.6)}
     <button class="btn" id="bShuffle">🔀<small id="shLeft">8</small></button>
     <button class="btn gold" id="bBlast" disabled>💥</button>
     <button class="btn" id="bLevels">☰</button>
-  <span id="bwm" style="position:fixed;right:4px;bottom:2px;font-size:9px;color:rgba(90,20,50,.5)">B10</span></footer>
+  <span id="bwm" style="position:fixed;right:4px;bottom:2px;font-size:9px;color:rgba(90,20,50,.5)">B11</span></footer>
 </div>
 <div id="overlay"><div class="card" id="card"></div></div>
 <div id="toast"></div>
@@ -352,15 +352,21 @@ function fit(){
   TW=Math.max(22,tw); TH=Math.max(28,th);
   LAYER_OFF=Math.max(6,Math.round(TW*0.5));
   relayout(xs,ys,ls);
-  window.__fitdbg="TW"+TW+" TH"+TH+" xs"+xs+" ys"+ys;var w=document.getElementById("bwm");if(w)w.textContent="B10 "+TW;
+  window.__fitdbg="TW"+TW+" TH"+TH+" xs"+xs+" ys"+ys;var w=document.getElementById("bwm");if(w)w.textContent="B11 "+TW;
 }
 function relayout(xs,ys,ls){
-  xs=xs||12; ys=ys||8; ls=ls===undefined?3:ls;
+  xs=xs||7; ys=ys||8; ls=ls===undefined?3:ls;
+  var lo=1e9, ro=-1e9, to=1e9, bo=-1e9;
+  for(var i=0;i<S.tiles.length;i++){var t=S.tiles[i]; if(!t.alive)continue;
+    t._lx=t.x*TW + t.l*LAYER_OFF; t._ly=t.y*TH - t.l*LAYER_OFF + ls*LAYER_OFF;
+    if(t._lx<lo)lo=t._lx; if(t._lx+TW>ro)ro=t._lx+TW;
+    if(t._ly<to)to=t._ly; if(t._ly+TH>bo)bo=t._ly+TH; }
+  if(lo>ro){lo=0;ro=xs*TW;to=0;bo=ys*TH+ls*LAYER_OFF;}
+  board.style.width=(ro-lo+32)+"px"; board.style.height=(bo-to+32)+"px";
   S.tiles.forEach(function(t){ if(!t.alive||!t.el)return;
-    t.el.style.left=(t.x*TW + t.l*LAYER_OFF +16)+"px";
-    t.el.style.top=(t.y*TH - t.l*LAYER_OFF + ls*LAYER_OFF +16)+"px";
+    t.el.style.left=(t._lx-lo+16)+"px";
+    t.el.style.top=(t._ly-to+16)+"px";
     if(t.l>0&&!t.dark) t.el.style.boxShadow="0 "+(5+2*t.l)+"px "+(10+5*t.l)+"px rgba(15,50,10,.5)"; });
-  board.style.width=(xs*TW + ls*LAYER_OFF+32)+"px"; board.style.height=(ys*TH + ls*LAYER_OFF+32)+"px";
   var rs=document.documentElement.style;
   rs.setProperty("--tw",TW+"px"); rs.setProperty("--th",TH+"px");
 }
