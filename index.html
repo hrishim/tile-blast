@@ -37,8 +37,8 @@ header{display:flex;align-items:center;gap:14px;padding:10px 16px 6px;}
 
 .tile{position:absolute;width:52px;height:64px;border-radius:9px;cursor:pointer;
   background:linear-gradient(160deg,#ffffff 0%,#f8f6fb 60%,#ebe8f2 100%);
-  border:1px solid #c9c4d8;border-bottom:5px solid #b3acc6;border-right:3px solid #cfc9dd;
-  box-shadow:3px 5px 9px rgba(60,10,35,.30), inset 0 1px 0 #fff;
+  border:1px solid #c9c4d8;border-bottom:7px solid #aba3c0;border-right:5px solid #c6bfd6;
+  box-shadow:5px 7px 11px rgba(60,10,35,.32), inset 0 1px 0 #fff;
   display:flex;align-items:center;justify-content:center;font-size:25px;line-height:1;
   user-select:none;transition:transform .12s, filter .2s, opacity .3s;}
 .tile.free{outline:2.5px solid #8a2be2;outline-offset:-1px;
@@ -342,8 +342,9 @@ function fit(){
   var h=Math.max(140,vh-used-6);
   var bw=board.offsetWidth||1, bh=board.offsetHeight||1;
   var s=Math.min(1,(vw-8)/bw,(h-4)/bh); if(!(s>0)||!isFinite(s))s=1;
-  board.style.transform="scale("+s+")";
-  window.__fitdbg="vw"+vw+" vh"+vh+" bw"+bw+" bh"+bh+" s"+s.toFixed(2);
+  if("zoom" in board.style){ board.style.zoom=String(s); board.style.transform="none"; }
+  else { board.style.zoom=""; board.style.transform="scale("+s+")"; }
+  window.__fitdbg="vw"+vw+" vh"+vh+" bw"+bw+" bh"+bh+" s"+s.toFixed(2)+("zoom" in board.style?"Z":"T");
 }
 function fitSoon(){ fit(); setTimeout(fit,60); setTimeout(fit,250);
   if(typeof requestAnimationFrame==="function") requestAnimationFrame(function(){requestAnimationFrame(fit);}); }
