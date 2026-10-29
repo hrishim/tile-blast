@@ -60,6 +60,7 @@ header{display:flex;align-items:center;gap:5px;padding:calc(8px + max(16px, env(
 .spark{position:absolute;width:7px;height:7px;border-radius:50%;pointer-events:none;z-index:7000;
   background:radial-gradient(circle,#fff 0%,#ffd21e 45%,rgba(255,180,0,0) 75%);animation:sparkFly .6s forwards}
 @keyframes sparkFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.tile.reveal{animation:tfrise .45s ease-out}@keyframes tfrise{0%{transform:translateY(7px) scale(.96);filter:brightness(.7)}100%{transform:none;filter:none}}
 .comboword{position:fixed;top:18%;left:50%;transform:translate(-50%,0);font:800 30px system-ui;color:#fff;text-shadow:0 2px 0 #b26a00,0 0 14px #ffd24a,0 3px 8px rgba(0,0,0,.6);z-index:70;pointer-events:none;letter-spacing:1px;transition:opacity .4s,transform .4s}.comboword b{color:#ffe27a}.comboword.out{opacity:0;transform:translate(-50%,-16px)}
 .poppts{position:absolute;pointer-events:none;z-index:7000;font-weight:900;font-size:17px;color:#fff;
   text-shadow:0 1px 0 #b3541e,0 2px 6px rgba(60,20,0,.5);animation:ptsUp .9s forwards}
@@ -511,6 +512,12 @@ function newLevel(l, silent, keepScore){
     var pool=[];for(var f=0;f<faceCount;f++){pool.push(f,f,f,f);}
     pool=shuffled(pool);S.tiles.forEach(function(t,i){if(!t.dark)t.face=pool[i%pool.length];});
   }
+  (function(){ /* face-down darks hide genuine paired faces until flipped (verified: no HP exists) */
+    var dks=shuffled(S.tiles.filter(function(t){return t.dark;}));
+    if(dks.length){ var fl=[],fk=shuffled(FACES.map(function(_,i){return i;}));
+      for(var k2=0;k2<Math.ceil(dks.length/2);k2++){ fl.push(fk[k2%fk.length],fk[k2%fk.length]); }
+      dks.forEach(function(t,i){ t.face=fl[i]; }); }
+  })();
     var gcount=S.tiles.filter(function(t){return t.gold;}).length;S.goldGoal=gcount||0; if(!gcount&&l>=5&&hardGap){S.goldGoal=0;}
   if(hardGap&&S.wave===1) toast("Hard Level — good luck!");
   render(); updateHUD(); stopTimer(); startTimer();
@@ -574,11 +581,15 @@ function relayout(xs,ys,ls){
 function fitSoon(){ fit(); setTimeout(fit,60); setTimeout(fit,250);
   if(typeof requestAnimationFrame==="function") requestAnimationFrame(function(){requestAnimationFrame(fit);}); }
 function updateTileStates(){
+  var rv=[];
   S.tiles.forEach(function(t){
     if(!t.alive){return;}
     var f=isFree(t,S.tiles);
+    var wasb=t.el.classList.contains("blocked");
     t.el.classList.toggle("free",f&&!t.dark); t.el.classList.toggle("blocked",!f&&!t.dark);
+    if(wasb&&f&&!t.dark) rv.push(t);
   });
+  rv.forEach(function(t,i){ setTimeout(function(){ if(t.alive&&t.el){ t.el.classList.add("reveal"); setTimeout(function(){t.el.classList.remove("reveal");},470); } }, i*124.5); });
 }
 function updateHUD(){
   var wv=$("waveVal"); if(wv&&S.waves) wv.textContent=(S.wave||1)+"/"+S.waves;
@@ -624,7 +635,11 @@ function onTile(t){window.__tapT=performance.now();
   if(!S.running||S.busy||!t.alive) return;
   if(!isFree(t,S.tiles)){t.el.classList.add("bad");setTimeout(function(){t.el.classList.remove("bad");},320);sndBad();
     save.frac=Math.min(24,(save.frac||0)+1); persist(); return;} /* FrustrationScore: mis-taps count */
-  if(t.dark){t.el.classList.add("bad");setTimeout(function(){t.el.classList.remove("bad");},320);_snd("wrong",.45);return;}
+  if(t.dark){ var __nw=Date.now(); if(t.__cd&&__nw-t.__cd<300) return; t.__cd=__nw;
+    t.dark=false; t.el.classList.remove("dark","hp3","hp2","hp1");
+    var __fs=t.el.querySelector(".f"); if(__fs&&t.face!==undefined) __fs.innerHTML=FACES[t.face];
+    _snd("debrisglass",.6); t.el.classList.add("reveal"); setTimeout(function(){t.el.classList.remove("reveal");},470);
+    updateTileStates(); updateHUD(); return; }
   sndPick(); sendToPool(t);
 }
 function flyToTray(el){_snd("slot"+Math.min(4,(S.goldCol||0)+1),.7); /* RabbitTileFlightPath cfg: flightDuration .5s, bezierArcHeight 80, waypoints 120 */
@@ -666,7 +681,7 @@ function removePair(a,b,quiet){
   updateTileStates(); updateHUD(); checkState();
 }
 /* DarkBox: every removed pair cracks all living dark boxes; hp 0 shatters */
-function absorbDark(){
+function absorbDark(){ return; /* verified 29 Oct: no HP/damage on dark boxes - tap flips */
   var dboxes=S.tiles.filter(function(t){return t.alive&&t.dark;});
   if(!dboxes.length)return;
   var t=dboxes[Math.floor(Math.random()*dboxes.length)];   /* one box absorbs this match */
@@ -681,7 +696,7 @@ function sendToPool(t){
   S.pool=S.pool||[]; if(S.pool.length>=POOLCAP) return;
   var __ins=S.pool.length; for(var __k=S.pool.length-1;__k>=0;__k--){ if(S.pool[__k].t&&S.pool[__k].t.face===t.face){ __ins=__k+1; break; } }
   S.pool.splice(__ins,0,{t:t});   /* group-insert after last equal resource-ID (CalcInsertIndex) */
-  t.el.classList.add("gone"); t.alive=false; if(S.sel===t)S.sel=null;
+  t.el.classList.add("gone"); t.alive=false; if(S.sel===t)S.sel=null; updateTileStates();
   _snd("goldget",.85);
   var n=S.pool.length; setTimeout(function(k){return function(){_snd("slot"+Math.min(4,k),.75);};}(n),250);
   updatePoolUI();
