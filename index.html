@@ -60,6 +60,7 @@ header{display:flex;align-items:center;gap:5px;padding:calc(8px + max(16px, env(
 .spark{position:absolute;width:7px;height:7px;border-radius:50%;pointer-events:none;z-index:7000;
   background:radial-gradient(circle,#fff 0%,#ffd21e 45%,rgba(255,180,0,0) 75%);animation:sparkFly .6s forwards}
 @keyframes sparkFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.comboword{position:fixed;top:18%;left:50%;transform:translate(-50%,0);font:800 30px system-ui;color:#fff;text-shadow:0 2px 0 #b26a00,0 0 14px #ffd24a,0 3px 8px rgba(0,0,0,.6);z-index:70;pointer-events:none;letter-spacing:1px;transition:opacity .4s,transform .4s}.comboword b{color:#ffe27a}.comboword.out{opacity:0;transform:translate(-50%,-16px)}
 .poppts{position:absolute;pointer-events:none;z-index:7000;font-weight:900;font-size:17px;color:#fff;
   text-shadow:0 1px 0 #b3541e,0 2px 6px rgba(60,20,0,.5);animation:ptsUp .9s forwards}
 @keyframes ptsUp{0%{transform:translateY(0) scale(.6);opacity:0}25%{transform:translateY(-10px) scale(1.15);opacity:1}100%{transform:translateY(-44px) scale(1);opacity:0}}
@@ -477,7 +478,7 @@ function levelTime(l){return Math.max(240, 450 - 10*(l-1));}
 
 function newLevel(l, silent, keepScore){
   if(typeof __idle!=="undefined"){__idle.trig=0;__idle.last=Date.now();}
-  S.level=l; S.sel=null; S.meter=0; S.combo=0; S.undo=[]; S.aids=0; S.feverUntil=0; S.elim=0; S.feverTier=0; S.feverTierPrev=0;
+  S.level=l; S.sel=null; S.meter=0; S.combo=0; S.undo=[]; S.aids=0; S.feverUntil=0; S.elim=0; S.feverTier=0; S.feverTierPrev=0; S.secondBoard=false;
   if(!keepScore){S.score=0; S.goldCol=0;}
   S.pool=[]; if(typeof updatePoolUI==="function")updatePoolUI();
   S.waves=6+3*((l-1)%3); S.wave=(arguments.length>3?arguments[3]:1);   /* wave-in-level rule: 6/9/12 boards per level */
@@ -652,7 +653,7 @@ function removePair(a,b,quiet){
     if(now>(S.feverUntil||0)){ toast("FEVER! x2 scoring"); _snd("fullcombo",.85); }
     S.feverUntil=now+8000; pts*=2;
   }
-  S.score+=pts; S.meter=Math.min(100,S.meter+100/14);
+  S.score+=pts; S.lastPts=pts; S.meter=Math.min(100,S.meter+100/14);
   S.undo.push({a:a,b:b,pts:pts});
   if(a.gold||b.gold){ flyToTray(a.gold?a.el:b.el); flyToTray(b.gold&&b!==a?b.el:a.el); S.goldCol=(S.goldCol||0)+(a.gold?1:0)+(b.gold?1:0);
     if(S.goldGoal&&S.goldCol>=S.goldGoal){ save.keys=(save.keys||3)+1; persist(); toast("Collection complete! +1 key"); _snd("welldone",.85);} }
@@ -691,8 +692,10 @@ function sendToPool(t){
       if(_a&&_b&&_a.face===_b.face){
         var _fa=S.pool[_pi].el||null; S.pool.splice(_pj,1); S.pool.splice(_pi,1);
         updatePoolUI(); _snd("streak",.8);
-        try{ if(_fa){var _pp=document.createElement("div"); _pp.className="poppts"; _pp.textContent="+"; document.body.appendChild(_pp); setTimeout(function(){_pp.remove();},600);} }catch(e){}
-        removePair(_a,_b,true); _rm=true; break; } }
+        removePair(_a,_b,true);
+        try{ var _pp=document.createElement("div"); _pp.className="poppts"; _pp.textContent="+"+S.lastPts; document.body.appendChild(_pp); setTimeout(function(){_pp.remove();},600);
+          if(S.combo>=3){ var _cb=document.createElement("div"); _cb.className="comboword"; _cb.innerHTML="Combo&nbsp;<b>"+S.combo+"</b>"; document.body.appendChild(_cb); setTimeout(function(){_cb.classList.add("out");},650); setTimeout(function(){_cb.remove();},1100);} }catch(e){}
+        _rm=true; break; } }
     if(_rm) break; }
   if(S.pool.length>=POOLCAP){ S.busy=true; _snd("fail",.9); setTimeout(failModal,700); }
   else checkState();
@@ -821,6 +824,10 @@ function starsFor(){ return S.aids<=0?3:(S.aids<=3?2:1); }
 function win(){
   if(S.wave<S.waves){                                   /* wave-in-level: next board, no modal */
     var nw=S.wave+1; newLevel(S.level,false,true,nw); toast("Wave "+S.wave+"/"+S.waves); _snd("scorefly",.7);_snd("generate",.6); updateHUD(); return;
+  }
+  if(!S.secondBoard){                                   /* DualBoardFlow: level continues on a second board (+1 wave, verified 6->7) */
+    var tot=S.waves; S.waves=tot+1; newLevel(S.level,false,true,1); S.secondBoard=true; S.waves=tot+1;
+    toast("Second board"); _snd("scorefly",.7); _snd("generate",.6); updateHUD(); return;
   }
   S.running=false; stopTimer();
   if(!(save.best[S.level]>=S.score)) save.best[S.level]=S.score;
