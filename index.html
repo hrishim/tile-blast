@@ -341,12 +341,18 @@ function buildPositions(variant){
   return P;
 }
 function isFree(t, tiles){
+  var left=false, right=false;
   for(var i=0;i<tiles.length;i++){
     var o=tiles[i];
-    if(o===t||!o.alive||o.l<=t.l) continue;
-    if(Math.abs(o.x-t.x)<1&&Math.abs(o.y-t.y)<1) return false;   /* upper-layer footprint overlap locks tile */
+    if(o===t||!o.alive) continue;
+    if(o.l>t.l){ if(Math.abs(o.x-t.x)<1&&Math.abs(o.y-t.y)<1) return false; }   /* above.Count>0 -> locked (IsLock) */
+    else if(o.l===t.l&&Math.abs(o.y-t.y)<1){
+      var dx=o.x-t.x;
+      if(dx<0&&dx>=-1) left=true;      /* GetLeftTiles: x-1 cell */
+      else if(dx>0&&dx<=1) right=true; /* GetRightTiles: x+2 half-steps = +1 tile */
+    }
   }
-  return true;
+  return !(left&&right);   /* free iff at least one horizontal side is clear */
 }
 function shuffled(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 /* Generate a removal order of pairs such that replaying it solves the board. */
@@ -471,7 +477,7 @@ function levelTime(l){return Math.max(240, 450 - 10*(l-1));}
 
 function newLevel(l, silent, keepScore){
   if(typeof __idle!=="undefined"){__idle.trig=0;__idle.last=Date.now();}
-  S.level=l; S.sel=null; S.meter=0; S.combo=0; S.undo=[]; S.aids=0; S.feverUntil=0;
+  S.level=l; S.sel=null; S.meter=0; S.combo=0; S.undo=[]; S.aids=0; S.feverUntil=0; S.elim=0; S.feverTier=0; S.feverTierPrev=0;
   if(!keepScore){S.score=0; S.goldCol=0;}
   S.pool=[]; if(typeof updatePoolUI==="function")updatePoolUI();
   S.waves=6+3*((l-1)%3); S.wave=(arguments.length>3?arguments[3]:1);   /* wave-in-level rule: 6/9/12 boards per level */
@@ -504,13 +510,6 @@ function newLevel(l, silent, keepScore){
     var pool=[];for(var f=0;f<faceCount;f++){pool.push(f,f,f,f);}
     pool=shuffled(pool);S.tiles.forEach(function(t,i){if(!t.dark)t.face=pool[i%pool.length];});
   }
-  (function(){ /* original rule: 4 unpaired singles per board feed the 4-slot pool */
-    var cand=S.tiles.filter(function(t){return t.alive&&!t.dark&&!t.gold;});
-    var used={}; cand.forEach(function(t){used[t.face]=1;});
-    var avail=[]; for(var f=0;f<FACES.length;f++){ if(!used[f])avail.push(f); }
-    avail=shuffled(avail);
-    shuffled(cand).slice(0,Math.min(4,avail.length)).forEach(function(t,k){ t.sgl=true; t.face=avail[k]; });
-  })();
     var gcount=S.tiles.filter(function(t){return t.gold;}).length;S.goldGoal=gcount||0; if(!gcount&&l>=5&&hardGap){S.goldGoal=0;}
   if(hardGap&&S.wave===1) toast("Hard Level — good luck!");
   render(); updateHUD(); stopTimer(); startTimer();
@@ -624,14 +623,8 @@ function onTile(t){window.__tapT=performance.now();
   if(!S.running||S.busy||!t.alive) return;
   if(!isFree(t,S.tiles)){t.el.classList.add("bad");setTimeout(function(){t.el.classList.remove("bad");},320);sndBad();
     save.frac=Math.min(24,(save.frac||0)+1); persist(); return;} /* FrustrationScore: mis-taps count */
-  if(S.sel===t){t.el.classList.remove("sel");S.sel=null;return;}
   if(t.dark){t.el.classList.add("bad");setTimeout(function(){t.el.classList.remove("bad");},320);_snd("wrong",.45);return;}
-  if(t.gold){ sendToPool(t); return; }
-  var __hp=false; for(var __i=0;__i<S.tiles.length;__i++){var __o=S.tiles[__i]; if(__o!==t&&__o.alive&&__o.face===t.face&&isFree(__o,S.tiles)){__hp=true;break;}}
-  if(!__hp){ sendToPool(t); return; }
-  if(S.sel && S.sel.face===t.face){ removePair(S.sel,t); S.sel=null; return; }
-  if(S.sel) S.sel.el.classList.remove("sel");
-  S.sel=t; t.el.classList.add("sel"); sndPick();
+  sndPick(); sendToPool(t);
 }
 function flyToTray(el){_snd("slot"+Math.min(4,(S.goldCol||0)+1),.7); /* RabbitTileFlightPath cfg: flightDuration .5s, bezierArcHeight 80, waypoints 120 */
   try{ if(!el||!el.getBoundingClientRect) return; var tr=document.getElementById("tray"); if(!tr||tr.style.display==="none")return;
@@ -648,8 +641,10 @@ function flyToTray(el){_snd("slot"+Math.min(4,(S.goldCol||0)+1),.7); /* RabbitTi
 function removePair(a,b,quiet){
   var now=Date.now();
   S.combo=(now-S.lastMatch<8000)?S.combo+1:1; S.lastMatch=now;
-  var mult=1+Math.min(1.5,(S.combo-1)*0.25); if(now<(S.feverUntil||0))mult*=2;
-  var pts=Math.round((50+Math.min(8,S.combo-1)*25)*mult);
+  var ft=(S.feverTier||0); var mult=[1,1.1,1.2,1.3,1.4][Math.min(4,ft)];   /* Fever score pct 110-140 (verified arrays) */
+  var pts=Math.round(Math.min(240+40*Math.max(0,S.combo-1),600)*mult);   /* CalculateBasePlate base/step/cap = 240/40/600 */
+  S.elim=(S.elim||0)+1; for(var _f=0;_f<4;_f++){ if(S.elim>=[8,18,30,46][_f]) S.feverTier=_f+1; }
+  if(S.feverTier&&(S.feverTierPrev||0)!==S.feverTier){ if(!S.feverTierPrev)  { toast("FEVER x"+mult.toFixed(1)); _snd("fullcombo",.85);} S.feverTierPrev=S.feverTier; }
   var mh=$("multVal"); if(mh)mh.textContent=mult.toFixed(1)+"x";
   var md=$("multDisp"); if(md)md.textContent=mult.toFixed(1)+"x";
   /* Fever: combo chain of 5+ ignites 8s of double scoring (ScoreMultiplier) */
@@ -683,13 +678,23 @@ var POOLCAP=4;
 function sendToPool(t){
   if(S.busy||!t.alive) return;
   S.pool=S.pool||[]; if(S.pool.length>=POOLCAP) return;
-  S.pool.push({t:t});
+  var __ins=S.pool.length; for(var __k=S.pool.length-1;__k>=0;__k--){ if(S.pool[__k].t&&S.pool[__k].t.face===t.face){ __ins=__k+1; break; } }
+  S.pool.splice(__ins,0,{t:t});   /* group-insert after last equal resource-ID (CalcInsertIndex) */
   t.el.classList.add("gone"); t.alive=false; if(S.sel===t)S.sel=null;
   _snd("goldget",.85);
   var n=S.pool.length; setTimeout(function(k){return function(){_snd("slot"+Math.min(4,k),.75);};}(n),250);
   updatePoolUI();
   if(n===POOLCAP-1)_snd("tick",.7);
-  if(n>=POOLCAP){ S.busy=true; _snd("fail",.9); setTimeout(failModal,700); }
+  for(var _pi=0;_pi<S.pool.length;_pi++){ var _rm=false;
+    for(var _pj=_pi+1;_pj<S.pool.length;_pj++){
+      var _a=S.pool[_pi].t,_b=S.pool[_pj].t;
+      if(_a&&_b&&_a.face===_b.face){
+        var _fa=S.pool[_pi].el||null; S.pool.splice(_pj,1); S.pool.splice(_pi,1);
+        updatePoolUI(); _snd("streak",.8);
+        try{ if(_fa){var _pp=document.createElement("div"); _pp.className="poppts"; _pp.textContent="+"; document.body.appendChild(_pp); setTimeout(function(){_pp.remove();},600);} }catch(e){}
+        removePair(_a,_b,true); _rm=true; break; } }
+    if(_rm) break; }
+  if(S.pool.length>=POOLCAP){ S.busy=true; _snd("fail",.9); setTimeout(failModal,700); }
   else checkState();
 }
 function updatePoolUI(){
@@ -718,8 +723,8 @@ function failModal(){
   $("mReplay").onclick=function(){ hideModal(); S.pool=[]; S.busy=false; updatePoolUI(); newLevel(S.level); };
 }
 function checkState(){
-  if(S.tiles.every(function(t){return !t.alive||t.gold;})){ win(); return; }
-  if(!findPair()) rescueBoard();                  /* DeadlockRestartProtect */
+  if(S.tiles.every(function(t){return !t.alive;})){ win(); return; }
+  if(!findPair()&&(!S.pool||S.pool.length===0)) rescueBoard();   /* DeadlockRestartProtect: only when bar has nothing in play */
 }
 function rescueBoard(){
   var dks=S.tiles.filter(function(t){return t.alive&&t.dark;});
